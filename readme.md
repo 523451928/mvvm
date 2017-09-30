@@ -31,6 +31,13 @@
 }
 ```
 
+## 对象
+- Observe
+- Dep
+- Watcher
+- MVVM
+- Compiler
+
 ## 特别感谢
 
 - [DMQ](https://github.com/DMQ)
