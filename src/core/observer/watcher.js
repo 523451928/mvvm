@@ -1,3 +1,8 @@
+import Dep from './dep'
+import {
+    hasOwn
+} from '../util/index'
+
 function Watcher(vm, expOrFn, cb) {
     this.cb = cb;
     this.vm = vm;
@@ -14,6 +19,7 @@ function Watcher(vm, expOrFn, cb) {
 }
 
 Watcher.prototype = {
+    constructor: Watcher,
     update: function() {
         this.run();
     },
@@ -25,6 +31,9 @@ Watcher.prototype = {
             this.cb.call(this.vm, value, oldVal);
         }
     },
+    /**
+     * @param {Dep} dep
+     */
     addDep: function(dep) {
         // 1. 每次调用run()的时候会触发相应属性的getter
         // getter里面会触发dep.depend()，继而触发这里的addDep
@@ -46,8 +55,14 @@ Watcher.prototype = {
         }
     },
     get: function() {
+
+        // 全局管理 watcher 
         Dep.target = this;
+
+        // 为数据的观察者添加 watcher
         var value = this.getter.call(this.vm, this.vm);
+
+        // 删除 watcher
         Dep.target = null;
         return value;
     },
@@ -66,3 +81,5 @@ Watcher.prototype = {
         }
     }
 };
+
+export default Watcher;
