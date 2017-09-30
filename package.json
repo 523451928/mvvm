@@ -2,7 +2,7 @@
   "name": "mvvm-es6",
   "version": "1.0.0",
   "description": "es6 mvvm vue",
-  "main": "index.js",
+  "main": "dist/mvvm.min.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node build/devServer.js",
