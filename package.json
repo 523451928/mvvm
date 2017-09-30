@@ -1,0 +1,36 @@
+{
+  "name": "mvvm-es6",
+  "version": "1.0.0",
+  "description": "es6 mvvm vue",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node build/devServer.js",
+    "build": "webpack --progress --hide-modules && NODE_ENV=production webpack --progress --hide-modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/liyanlong/mvvm.git"
+  },
+  "keywords": [
+    "es6",
+    "mvvm",
+    "vue",
+    "js"
+  ],
+  "author": "liyl",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/liyanlong/mvvm/issues"
+  },
+  "homepage": "https://github.com/liyanlong/mvvm#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.0",
+    "html-webpack-plugin": "^2.30.1",
+    "webpack": "^3.6.0",
+    "webpack-dev-server": "^2.8.2",
+    "webpack-merge": "^4.1.0"
+  }
+}
