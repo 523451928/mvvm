@@ -56,9 +56,8 @@ Compile.prototype = {
     var childNodes = el.childNodes;
     [].slice.call(childNodes).forEach((node) => {
       var text = node.textContent;
-
       // 文本插值表达式 {{}}
-      var reg = /\{\{(.*)\}\}/;
+      var reg = /\{\{(.*?)\}\}/;
 
       if (this.isElementNode(node)) {
         this.compile(node);

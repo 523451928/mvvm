@@ -1,6 +1,8 @@
 import MVVM from 'mvvm'
 
-const template = `<input type="text" v-model="word">
+const template = `
+<h2>Welcome {{user.firstname}} <span>{{user.lastname}}</span></h2> 
+<input type="text" v-model="word">
 <p>{{word}}</p>
 <button v-on:click="sayHi">change model</button>
 `;
@@ -21,4 +23,3 @@ const vm = new MVVM({
     }
   }
 });
-console.log(vm._data);
