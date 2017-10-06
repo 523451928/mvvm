@@ -58,10 +58,11 @@ export function defineReactive(obj, key, val) {
     get: function reactiveGetter() {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
-        // 将当前的 watcher 传递给 观察员
+        // 将当前的 watcher 观察员 传递至数据对象的观察集合中
+        // 如果已经存在于数据集合中, 则忽略
         dep.depend();
         if (childOb) {
-          // 将当前的 watcher 传递给子对象的 观察员
+          // 将当前的 watcher 传递给子对象的 数据对象的观察员集合
           childOb.dep.depend();
         }
       }
@@ -77,6 +78,8 @@ export function defineReactive(obj, key, val) {
       } else {
         val = newVal;
       }
+
+      // 如果为对象，则创建新的 __ob__ 对象
       childOb = observe(newVal);
       dep.notify();
     }

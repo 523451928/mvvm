@@ -7,9 +7,8 @@ function MVVM(options) {
         !(this instanceof MVVM)) {
         console.warn('Vue is a constructor and should be called with the `new` keyword')
     }
-    this._init(options)
+    this._init(options);
 }
-
 
 MVVM.prototype = {
     constructor: MVVM,

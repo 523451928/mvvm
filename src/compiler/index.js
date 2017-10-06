@@ -148,6 +148,7 @@ var compileUtil = {
     // 策略模式
     var updaterFn = updater[dir + 'Updater'];
 
+    // 直接运行获取结果
     updaterFn && updaterFn(node, this._getVMVal(vm, exp));
 
     // 新增订阅者

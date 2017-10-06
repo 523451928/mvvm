@@ -1,4 +1,6 @@
 import {observe} from '../observer/index'
+import Watcher from '../observer/watcher'
+import Dep from '../observer/dep'
 import {
   handleError, 
   isPlainObject,
@@ -12,7 +14,7 @@ const sharedPropertyDefinition = {
   configurable: true,
   get: noop,
   set: noop
-}
+};
 
 /**
  * 属性代理
@@ -20,22 +22,28 @@ const sharedPropertyDefinition = {
  */
 export function proxy (target, sourceKey, key) {
   sharedPropertyDefinition.get = function proxyGetter () {
-    return this[sourceKey][key]
+    return this[sourceKey][key];
   }
   sharedPropertyDefinition.set = function proxySetter (val) {
-    this[sourceKey][key] = val
+    this[sourceKey][key] = val;
   }
-  Object.defineProperty(target, key, sharedPropertyDefinition)
+  Object.defineProperty(target, key, sharedPropertyDefinition);
 }
 
 export function initState (vm) {
-  const opts = vm.$options
-  vm._watchers = []
+  const opts = vm.$options;
+
+  // new Watcher(vm) to push vm._watchers
+  vm._watchers = [];
 
   if (opts.data) {
-    initData(vm)
+    initData(vm);
   } else {
-    observe(vm._data = {}, true /* asRootData */)
+    observe(vm._data = {}, true /* asRootData */);
+  }
+
+  if(opts.computed) {
+    initComputed(vm, opts.computed);
   }
 }
 
@@ -54,7 +62,7 @@ function initData (vm) {
       'data functions should return an object:\n' +
       'https://vuejs.org/v2/guide/components.html#data-Must-Be-a-Function',
       vm
-    )
+    );
   }
   // proxy data on instance
   const keys = Object.keys(data)
@@ -69,7 +77,7 @@ function initData (vm) {
         warn(
           `method "${key}" has already been defined as a data property.`,
           vm
-        )
+        );
       }
     }
 
@@ -79,28 +87,125 @@ function initData (vm) {
         `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
-      )
+      );
     } else if (!isReserved(key)) {
       // 非 $ 或 _ 开头属性
-      proxy(vm, `_data`, key)
+      proxy(vm, `_data`, key);
     }
   }
   // observe data
-  observe(data, true /* asRootData */)
+  observe(data, true /* asRootData */);
 }
 
 
+const computedWatcherOptions = { lazy: true }
+
+/**
+ * 初始化计算属性
+ * 
+ * @param {MVVM} vm 
+ * @param {object} computed 
+ */
 function initComputed (vm, computed) {
   const watchers = vm._computedWatchers = Object.create(null);
+
+  // computed key
   for (const key in computed) {
+    
+    // 获取计算属性声明
+    const userDef = computed[key];
+    // 检测声明是否符合要求
+    const getter = typeof userDef === 'function' ? userDef : userDef.get;
+    if (process.env.NODE_ENV !== 'production' && getter == null) {
+      warn(
+        `Getter is missing for computed property "${key}".`,
+        vm
+      );
+    }
+    
+    // create key watchers
+    watchers[key] = new Watcher(
+      vm,
+      getter || noop,
+      noop,
+      computedWatcherOptions
+    );
+    // component-defined computed properties are already defined on the
+    // component prototype. We only need to define computed properties defined
+    // at instantiation here.
+    if (!(key in vm)) {
+      defineComputed(vm, key, userDef)
+    } 
+    
+  }
+}
+
+
+export function defineComputed (target, key, userDef) {
+  const shouldCache = true;
+  if (typeof userDef === 'function') {
+    // 只设置getter
+    sharedPropertyDefinition.get = shouldCache
+      ? createComputedGetter(key)
+      : userDef
+    sharedPropertyDefinition.set = noop;
+  } else {
+    // 同时设置 getter setter
+    sharedPropertyDefinition.get = userDef.get
+      ? shouldCache && userDef.cache !== false
+        ? createComputedGetter(key)
+        : userDef.get
+      : noop;
+
+    sharedPropertyDefinition.set = userDef.set
+      ? userDef.set
+      : noop;
+  }
+
+  if (process.env.NODE_ENV !== 'production' &&
+      sharedPropertyDefinition.set === noop) {
+    sharedPropertyDefinition.set = function () {
+      warn(
+        `Computed property "${key}" was assigned to but it has no setter.`,
+        this
+      );
+    }
+  }
+  // 定义 计算属性 
+  Object.defineProperty(target, key, sharedPropertyDefinition)
+}
+
+
+// 创建 计算属性的 getter
+function createComputedGetter (key) {
+
+  return function computedGetter () {
+    // this => vm
+    const watcher = this._computedWatchers && this._computedWatchers[key];
+    if (watcher) {
+
+      // lazy dirty 立即计算
+      if (watcher.dirty) {
+        watcher.evaluate();
+      }
+
+      // 将当前compiler 指令下的 watcher 
+      // 把计算属性内涉及到的
+      if (Dep.target) {
+        // 注入到计算属性的 观察者fullname
+        watcher.depend();
+      }
+      // 返回最新值
+      return watcher.value;
+    }
   }
 }
 
 function getData (data, vm) {
   try {
-    return data.call(vm)
+    return data.call(vm);
   } catch (e) {
-    handleError(e, vm, `data()`)
-    return {}
+    handleError(e, vm, `data()`);
+    return {};
   }
 }

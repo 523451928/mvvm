@@ -1,4 +1,4 @@
-import Dep from './dep'
+import Dep, {pushTarget, popTarget} from './dep'
 import {
   hasOwn
 } from '../util/index'
@@ -9,24 +9,37 @@ import {
  * @param {any} vm 
  * @param {any} expOrFn 
  * @param {any} cb 
+ * @param {any} options 
  */
-function Watcher(vm, expOrFn, cb) {
+function Watcher(vm, expOrFn, cb, options = {}) {
   this.cb = cb;
   this.vm = vm;
   this.expOrFn = expOrFn;
   this.depIds = {};
+  this.newDepIds = {};
+
+  vm._watchers.push(this);
+  this.lazy = !!options.lazy;
+  this.dirty = this.lazy;
+
   if (typeof expOrFn === 'function') {
     this.getter = expOrFn;
   } else {
     this.getter = this.parseGetter(expOrFn);
   }
-  this.value = this.get();
+  this.value = this.lazy
+  ? undefined
+  : this.get();
 }
 
 Watcher.prototype = {
   constructor: Watcher,
   update: function () {
-    this.run();
+    if (this.lazy) {
+      this.dirty = true
+    } else {
+      this.run();      
+    }
   },
   run: function () {
     var value = this.get();
@@ -36,7 +49,9 @@ Watcher.prototype = {
       this.cb.call(this.vm, value, oldVal);
     }
   },
+  
   /**
+   * watcher 观察员 加入到某个被观察数据集合中
    * @param {Dep} dep
    */
   addDep: function (dep) {
@@ -54,22 +69,67 @@ Watcher.prototype = {
     // 这一步是在 this.get() --> this.getVMVal() 里面完成，forEach时会从父级开始取值，间接调用了它的getter
     // 触发了addDep(), 在整个forEach过程，当前wacher都会加入到每个父级过程属性的dep
     // 例如：当前watcher的是'child.child.name', 那么child, child.child, child.child.name这三个属性的dep都会加入当前watcher
-    if (!this.depIds.hasOwnProperty(dep.id)) {
-      dep.addSub(this);
-      this.depIds[dep.id] = dep;
+    if (!hasOwn(this.newDepIds, dep.id)) {
+      this.newDepIds[dep.id] = dep;
+      if (!hasOwn(this.depIds, dep.id)) {
+        dep.addSub(this);
+        this.depIds[dep.id] = dep;
+      }
     }
   },
+
+  /**
+   * Evaluate the getter, and re-collect dependencies.
+   */
   get: function () {
-    // 当前的 数据 Watcher 
-    Dep.target = this;
+    // 设置当前的 Watcher 
+    pushTarget(this);
+    const vm = this.vm;
 
-    // 为数据的观察者添加 watcher
-    var value = this.getter && this.getter.call(this.vm, this.vm);
+    // 获取value的同时
+    // 为数据的观察者添加watcher
+    // 如果为computed 计算属性, 则会出发内部多次的 getter 调用
+    // 则内部的数据观察对象会收集同一个 watcher
+    let value = this.getter && this.getter.call(vm, vm);
 
-    Dep.target = null;
+    popTarget();
+    this.cleanupDeps();
     return value;
   },
+  /**
+   * Evaluate the value of the watcher.
+   * This only gets called for lazy watchers.
+   */
+  evaluate: function () {
+    this.value = this.get();
+    this.dirty = false;
+  },
 
+  /**
+   * Depend on all deps collected by this watcher.
+   */
+  depend: function () {
+    let maps = Object.keys(this.depIds);
+    maps.forEach((key) => {
+      this.depIds[key].depend();
+    });
+  },
+  /**
+   * Clean up for dependency collection.
+   */
+  cleanupDeps: function () {
+    let keys = Object.keys(this.depIds);
+    keys.forEach((key) => {
+      const dep = this.depIds[key];
+      // 删除旧的观察者依赖
+      if (!hasOwn(this.newDepIds, dep.id)) {
+        dep.removeSub(this);
+      }
+    });
+
+    this.depIds = this.newDepIds;
+    this.newDepIds = Object.create(null);
+  },
   parseGetter: function (exp) {
     if (/[^\w.$]/.test(exp)) {
       return;
