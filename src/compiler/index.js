@@ -152,6 +152,7 @@ var compileUtil = {
     updaterFn && updaterFn(node, this._getVMVal(vm, exp));
 
     // 新增订阅者
+    // watcher数据变化后执行更新视图指令
     new Watcher(vm, exp, function (value, oldValue) {
       updaterFn && updaterFn(node, value, oldValue);
     });

@@ -140,7 +140,6 @@ function initComputed (vm, computed) {
   }
 }
 
-
 export function defineComputed (target, key, userDef) {
   const shouldCache = true;
   if (typeof userDef === 'function') {
@@ -178,24 +177,23 @@ export function defineComputed (target, key, userDef) {
 
 // 创建 计算属性的 getter
 function createComputedGetter (key) {
-
+  
   return function computedGetter () {
     // this => vm
     const watcher = this._computedWatchers && this._computedWatchers[key];
     if (watcher) {
-
-      // lazy dirty 立即计算
+      // dirty => true 立即计算
       if (watcher.dirty) {
         watcher.evaluate();
       }
 
-      // 将当前compiler 指令下的 watcher 
-      // 把计算属性内涉及到的
+      // 如果存在视图指令引用计算属性
       if (Dep.target) {
-        // 注入到计算属性的 观察者fullname
+        // 将当前计算属性的依赖数据对象集 添加 当前的视图指令的 watcher
+        // 如果计算属性内部的数据依赖发生变化, 通知视图指令进行更新
         watcher.depend();
       }
-      // 返回最新值
+
       return watcher.value;
     }
   }

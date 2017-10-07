@@ -1,6 +1,5 @@
 var uid = 0;
 
-
 /**
  * A dep is an observable that can have multiple
  * directives subscribing to it.

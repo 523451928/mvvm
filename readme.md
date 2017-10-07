@@ -9,7 +9,6 @@
 # npm run build
 ```
 
-
 ## 引入 babel-loader
 
 安装
@@ -31,12 +30,24 @@
 }
 ```
 
-## 对象
+## Usage
+
+```bash
+
+# git clone https://github.com/liyanlong/mvvm
+# cd mvvm
+# npm install
+# npm run dev
+```
+
+
+## 当前对象
 - Observe
 - Dep
 - Watcher
 - MVVM
 - Compiler
+
 
 ## 特别感谢
 

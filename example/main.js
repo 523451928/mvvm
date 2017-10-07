@@ -3,7 +3,6 @@ import MVVM from 'mvvm'
 const template = `
 <h2>Welcome {{user.firstname}} <span>{{user.lastname}}</span></h2>
 <p>computed: {{fullname}}</p>
-<p>second computed: {{fullname}}</p>
 <input type="text" v-model="word">
 <button v-on:click="sayHi">change model</button>
 `;
@@ -21,7 +20,7 @@ const vm = new MVVM({
   computed: {
     fullname: function () {
       // getter 调用
-      return this.word + ' ' + this.user.firstname + ' ' + this.user.lastname;
+      return this.user.firstname + ' ' + this.user.lastname;
     }
   },
   methods: {

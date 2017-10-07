@@ -21,12 +21,14 @@ function Watcher(vm, expOrFn, cb, options = {}) {
   vm._watchers.push(this);
   this.lazy = !!options.lazy;
   this.dirty = this.lazy;
-
+  
   if (typeof expOrFn === 'function') {
     this.getter = expOrFn;
   } else {
     this.getter = this.parseGetter(expOrFn);
   }
+
+  // 观察员 value
   this.value = this.lazy
   ? undefined
   : this.get();
@@ -35,17 +37,21 @@ function Watcher(vm, expOrFn, cb, options = {}) {
 Watcher.prototype = {
   constructor: Watcher,
   update: function () {
+    // 如果为计算属性的watcher，则延缓更新。设置数据为dirty
     if (this.lazy) {
-      this.dirty = true
+      this.dirty = true;
     } else {
-      this.run();      
+      // 数据对象直接更新
+      this.run();
     }
   },
+  // 非计算属性获取value
   run: function () {
     var value = this.get();
     var oldVal = this.value;
     if (value !== oldVal) {
       this.value = value;
+      // 更新视图的指令
       this.cb.call(this.vm, value, oldVal);
     }
   },
