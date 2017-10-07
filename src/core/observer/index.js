@@ -1,8 +1,10 @@
 import Dep from './dep'
+import { arrayMethods } from './array'
 import {
   def,
   hasOwn,
-  isObject
+  isObject,
+  hasProto
 } from '../util/index'
 
 
@@ -105,5 +107,29 @@ export function observe(value, asRootData /* 是否为rootData */) {
   }
   return ob;
 };
+
+
+/**
+ * Augment an target Object or Array by intercepting
+ * the prototype chain using __proto__
+ */
+function protoAugment (target, src, keys) {
+  /* eslint-disable no-proto */
+  target.__proto__ = src
+  /* eslint-enable no-proto */
+}
+
+/**
+ * Augment an target Object or Array by defining
+ * hidden properties.
+ */
+/* istanbul ignore next */
+function copyAugment (target, src, keys) {
+  for (let i = 0, l = keys.length; i < l; i++) {
+    const key = keys[i]
+    def(target, key, src[key])
+  }
+}
+
 
 export default Observer;
