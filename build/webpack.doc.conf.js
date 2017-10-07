@@ -1,16 +1,9 @@
-var baseConfig = require('./webpack.base.conf');
-var merge = require('webpack-merge');
 
-module.exports = merge(baseConfig, {
-  entry: {
-    mvvm: './src/core/index.js',
-  },
-  output: {
-    filename: '[main].js',
-    library: 'MVVM',
-    libraryTarget: 'umd',
-    path: path.resolve(__dirname, '../dist'),
-  },
+var webpack = require('webpack');
+var merge = require('webpack-merge');
+var devConfig = require('./webpack.dev.conf');
+
+module.exports = merge(devConfig, {
   devtool: '#source-map',
   plugins: [
     new webpack.DefinePlugin({

@@ -1,4 +1,7 @@
+/** @module shared/util */
+
 const _toString = Object.prototype.toString
+const hasOwnProperty = Object.prototype.hasOwnProperty
 
 /**
  * Mix properties into target object.
@@ -53,7 +56,6 @@ export function makeMap (
 /**
  * Check whether the object has the property.
  */
-const hasOwnProperty = Object.prototype.hasOwnProperty
 export function hasOwn (obj, key) {
   return hasOwnProperty.call(obj, key)
 }

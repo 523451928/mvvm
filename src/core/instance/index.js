@@ -2,6 +2,10 @@ import Watcher from 'src/core/observer/watcher'
 import {observe} from 'src/core/observer'
 import initMixin from './init'
 
+/**
+ * Create a MVVM
+ * @class
+ */
 function MVVM(options) {
     if (process.env.NODE_ENV !== 'production' &&
         !(this instanceof MVVM)) {

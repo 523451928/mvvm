@@ -109,23 +109,29 @@ function Watcher(vm, expOrFn, cb) {
   } else {
     this.getter = this.parseGetter(expOrFn);
   }
+
+  // 观察员 value
   this.value = this.lazy ? undefined : this.get();
 }
 
 Watcher.prototype = {
   constructor: Watcher,
   update: function update() {
+    // 如果为计算属性的watcher，则延缓更新。设置数据为dirty
     if (this.lazy) {
       this.dirty = true;
     } else {
+      // 数据对象直接更新
       this.run();
     }
   },
+  // 非计算属性获取value
   run: function run() {
     var value = this.get();
     var oldVal = this.value;
     if (value !== oldVal) {
       this.value = value;
+      // 更新视图的指令
       this.cb.call(this.vm, value, oldVal);
     }
   },
@@ -367,7 +373,10 @@ if ("production".NODE_ENV !== 'production') {
 /* harmony export (immutable) */ __webpack_exports__["a"] = hasOwn;
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
+/** @module shared/util */
+
 var _toString = Object.prototype.toString;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
 
 /**
  * Mix properties into target object.
@@ -421,7 +430,6 @@ function makeMap(str, expectsLowerCase) {
 /**
  * Check whether the object has the property.
  */
-var hasOwnProperty = Object.prototype.hasOwnProperty;
 function hasOwn(obj, key) {
   return hasOwnProperty.call(obj, key);
 }
@@ -581,6 +589,10 @@ __WEBPACK_IMPORTED_MODULE_0__instance_index__["a" /* default */].version = '1.0.
 
 
 
+/**
+ * Create a MVVM
+ * @class
+ */
 function MVVM(options) {
     if ("production".NODE_ENV !== 'production' && !(this instanceof MVVM)) {
         console.warn('Vue is a constructor and should be called with the `new` keyword');
@@ -831,19 +843,18 @@ function createComputedGetter(key) {
     // this => vm
     var watcher = this._computedWatchers && this._computedWatchers[key];
     if (watcher) {
-
-      // lazy dirty 立即计算
+      // dirty => true 立即计算
       if (watcher.dirty) {
         watcher.evaluate();
       }
 
-      // 将当前compiler 指令下的 watcher 
-      // 把计算属性内涉及到的
+      // 如果存在视图指令引用计算属性
       if (__WEBPACK_IMPORTED_MODULE_2__observer_dep__["a" /* default */].target) {
-        // 注入到计算属性的 观察者fullname
+        // 将当前计算属性的依赖数据对象集 添加 当前的视图指令的 watcher
+        // 如果计算属性内部的数据依赖发生变化, 通知视图指令进行更新
         watcher.depend();
       }
-      // 返回最新值
+
       return watcher.value;
     }
   };
@@ -1020,6 +1031,7 @@ var compileUtil = {
     updaterFn && updaterFn(node, this._getVMVal(vm, exp));
 
     // 新增订阅者
+    // watcher数据变化后执行更新视图指令
     new __WEBPACK_IMPORTED_MODULE_0__core_observer_watcher__["a" /* default */](vm, exp, function (value, oldValue) {
       updaterFn && updaterFn(node, value, oldValue);
     });

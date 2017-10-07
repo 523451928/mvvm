@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node build/devServer.js",
-    "build": "webpack --progress --hide-modules && NODE_ENV=production webpack --progress --hide-modules"
+    "build": "npm run build:lib && npm run build:docs",
+    "build:lib": "webpack --progress --hide-modules && NODE_ENV=production webpack --progress --hide-modules",
+    "build:docs": "NODE_ENV=production webpack --progress --hide-modules --config ./build/webpack.doc.conf.js"
   },
   "repository": {
     "type": "git",
