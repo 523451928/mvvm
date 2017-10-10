@@ -43,3 +43,4 @@ export const arrayMethods = Object.create(arrayProto)
     return result
   })
 })
+

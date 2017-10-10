@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "node build/devServer.js",
+    "dev:test": "karma start test/unit/karma.dev.config.js",
     "build": "npm run build:lib && npm run build:docs",
     "build:lib": "webpack --progress --hide-modules && NODE_ENV=production webpack --progress --hide-modules",
     "build:docs": "NODE_ENV=production webpack --progress --hide-modules --config ./build/webpack.doc.conf.js"
@@ -30,7 +31,15 @@
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.0",
+    "es6-promise": "^4.1.1",
     "html-webpack-plugin": "^2.30.1",
+    "jasmine-core": "^2.8.0",
+    "karma": "^1.7.1",
+    "karma-chrome-launcher": "^2.2.0",
+    "karma-jasmine": "^1.1.0",
+    "karma-mocha-reporter": "^2.2.4",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^2.0.5",
     "webpack": "^3.6.0",
     "webpack-dev-server": "^2.8.2",
     "webpack-merge": "^4.1.0"

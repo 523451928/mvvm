@@ -12,7 +12,9 @@ export default function initMixin (MVVM) {
     vm.$options = options || {};
     
     initState(vm);
-    this.$compile = new Compile(this.$options.el || document.body, this)
+    if (vm.$options.el) {
+      this.$compile = new Compile(this.$options.el, this)      
+    }
   }
   
 }

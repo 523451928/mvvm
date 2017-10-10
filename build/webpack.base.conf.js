@@ -1,4 +1,5 @@
 var path = require('path');
+var alias = require('./alias');
 
 function resolve (dir) {
   return path.join(__dirname, '..', dir)
@@ -6,10 +7,7 @@ function resolve (dir) {
 
 module.exports = {
   resolve: {
-    alias: {
-      'mvvm$': '../src/core/index.js',
-      'src': path.resolve(__dirname, '../src/')
-    }
+    alias: alias
   },
   module: {
     rules: [{

@@ -4,11 +4,20 @@ import {
   def,
   hasOwn,
   isObject,
+  isPlainObject,
   hasProto
 } from '../util/index'
 
 
-function Observer(value) {
+const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
+
+/**
+ * 数据观察员
+ * @constructor
+ * @export
+ * @param {object} value 
+ */
+export function Observer(value) {
   this.value = value;
 
   // value 对象观察类, 
@@ -18,7 +27,16 @@ function Observer(value) {
   def(value, '__ob__', this);
 
   if (Array.isArray(value)) {
-    // TODO: observeArray
+
+    // 检测是否有原型方法存在
+    // 将数组转换为类数组
+    const augment = hasProto
+    ? protoAugment
+    : copyAugment;
+    augment(value, arrayMethods, arrayKeys);
+
+    // 将数组中的对象项设置为 object
+    this.observeArray(value);
   } else {
     this.walk(value);
   }
@@ -30,6 +48,15 @@ Observer.prototype = {
     const keys = Object.keys(obj);
     for (let i = 0; i < keys.length; i++) {
       defineReactive(obj, keys[i], obj[keys[i]]);
+    }
+  },
+  /**
+   * Observe a list of Array items.
+   * @param {array} items
+   */
+  observeArray: function (items) {
+    for (let i = 0, l = items.length; i < l; i++) {
+      observe(items[i]);
     }
   }
 };
@@ -99,7 +126,7 @@ export function observe(value, asRootData /* 是否为rootData */) {
   let ob;
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
-  } else {
+  } else if (!value._isMVVM && Object.isExtensible(value)){
     ob = new Observer(value);
   }
   if (asRootData && ob) {
@@ -108,8 +135,8 @@ export function observe(value, asRootData /* 是否为rootData */) {
   return ob;
 };
 
-
 /**
+ * 
  * Augment an target Object or Array by intercepting
  * the prototype chain using __proto__
  */
@@ -130,6 +157,5 @@ function copyAugment (target, src, keys) {
     def(target, key, src[key])
   }
 }
-
 
 export default Observer;
