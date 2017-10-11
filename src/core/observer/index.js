@@ -18,6 +18,8 @@ const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
  * @param {object} value 
  */
 export function Observer(value) {
+
+  // 数据观察员的 原始 value
   this.value = value;
 
   // value 对象观察类, 
@@ -26,9 +28,8 @@ export function Observer(value) {
   this.vmCount = 0; // number of vms that has this object as root $data
   def(value, '__ob__', this);
 
+  // 重新定义 value的属性描述  
   if (Array.isArray(value)) {
-
-    // 检测是否有原型方法存在
     // 将数组转换为类数组
     const augment = hasProto
     ? protoAugment
@@ -85,7 +86,7 @@ export function defineReactive(obj, key, val) {
     enumerable: true,
     configurable: true,
     get: function reactiveGetter() {
-      const value = getter ? getter.call(obj) : val
+      const value = getter ? getter.call(obj) : val;
       if (Dep.target) {
         // 将当前的 watcher 观察员 传递至数据对象的观察集合中
         // 如果已经存在于数据集合中, 则忽略
@@ -95,7 +96,8 @@ export function defineReactive(obj, key, val) {
           childOb.dep.depend();
         }
       }
-      return val;
+      // 返回 getter value or  val
+      return value;
     },
     set: function reactiveSetter(newVal) {
       const value = getter ? getter.call(obj) : val;
@@ -116,8 +118,9 @@ export function defineReactive(obj, key, val) {
 }
 
 /**
- * 为 对象 内置 __ob__ 观察员
- * 已存在观察员
+ * 代理函数
+ * 代理创建 Observer 对象
+ * Observer 对象附加给 对象属性 __ob__ 中
  */
 export function observe(value, asRootData /* 是否为rootData */) {
   if (!isObject(value)) {
