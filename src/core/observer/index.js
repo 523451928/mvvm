@@ -5,7 +5,9 @@ import {
   hasOwn,
   isObject,
   isPlainObject,
-  hasProto
+  hasProto,
+  warn,
+  isValidArrayIndex
 } from '../util/index'
 
 
@@ -22,10 +24,11 @@ export function Observer(value) {
   // 数据观察员的 原始 value
   this.value = value;
 
-  // value 对象观察类, 
+  // 数组情况下有用
   this.dep = new Dep();
-
   this.vmCount = 0; // number of vms that has this object as root $data
+  // 循环引用定义
+  // 设置__ob__为不可枚举属性
   def(value, '__ob__', this);
 
   // 重新定义 value的属性描述  
@@ -47,8 +50,10 @@ Observer.prototype = {
   constructor: Observer,
   walk: function (obj) {
     const keys = Object.keys(obj);
+    let key;
     for (let i = 0; i < keys.length; i++) {
-      defineReactive(obj, keys[i], obj[keys[i]]);
+      key = keys[i];
+      defineReactive(obj, key, obj[key]);
     }
   },
   /**
@@ -66,20 +71,19 @@ Observer.prototype = {
  * Define a reactive property on an Object.
  */
 export function defineReactive(obj, key, val) {
-
-  // 非对象属性观察类
-  const dep = new Dep();
-  
   const property = Object.getOwnPropertyDescriptor(obj, key);
-
+  
   if (property && property.configurable === false) {
     return;
   }
 
+  // 非对象属性观察类
+  const dep = new Dep();
+
   // cater for pre-defined getter/setters
   const getter = property && property.get;
   const setter = property && property.set;
-
+  
   // 深度观察
   let childOb = observe(val);
   Object.defineProperty(obj, key, {
@@ -87,7 +91,9 @@ export function defineReactive(obj, key, val) {
     configurable: true,
     get: function reactiveGetter() {
       const value = getter ? getter.call(obj) : val;
+
       if (Dep.target) {
+        
         // 将当前的 watcher 观察员 传递至数据对象的观察集合中
         // 如果已经存在于数据集合中, 则忽略
         dep.depend();
@@ -96,7 +102,7 @@ export function defineReactive(obj, key, val) {
           childOb.dep.depend();
         }
       }
-      // 返回 getter value or  val
+      // 返回 getter value or val
       return value;
     },
     set: function reactiveSetter(newVal) {
@@ -159,6 +165,84 @@ function copyAugment (target, src, keys) {
     const key = keys[i]
     def(target, key, src[key])
   }
+}
+
+
+/**
+ * Set a property on an object. Adds the new property and
+ * triggers change notification if the property doesn't
+ * already exist.
+ */
+export function set (target, key, val) {
+  // 数组或类数组添加项数
+  if (Array.isArray(target) && isValidArrayIndex(key)) {
+    target.length = Math.max(target.length, key);
+    // set data
+    // if target.__ob__ exits
+    // trigger target.__ob__.dep.notify() 
+    target.splice(key, 1, val);
+    return val;
+  }
+
+  // 已存在key, 覆盖属性
+  if (hasOwn(target, key)) {
+    target[key] = val;
+    return val;
+  }
+
+  // observe 数据对象
+  const ob = (target).__ob__;
+  // target 为 mvvm 对象 或者 observe 且 ob 的数据为 new MVVM() 的 root
+  // vm = new MVVM({data: {}})
+  // vm._data or vm
+  if (target._isMVVM || (ob && ob.vmCount)) {
+    process.env.NODE_ENV !== 'production' && warn(
+      'Avoid adding reactive properties to a Vue instance or its root $data ' +
+      'at runtime - declare it upfront in the data option.'
+    );
+    return val;
+  }
+  // 非 observe 对象, 普通属性赋值
+  if (!ob) {
+    target[key] = val;
+    return val;
+  }
+  
+  defineReactive(ob.value, key, val);
+  
+  // 针对类数组对象, 通知更新
+  ob.dep.notify();
+  return val;
+}
+
+
+/**
+ * Delete a property and trigger change if necessary.
+ */
+export function del (target, key) {
+  // 类数组移除
+  if (Array.isArray(target) && isValidArrayIndex(key)) {
+    target.splice(key, 1);
+    return;
+  }
+  const ob = (target).__ob__;
+  if (target._isVue || (ob && ob.vmCount)) {
+    process.env.NODE_ENV !== 'production' && warn(
+      'Avoid deleting properties on a Vue instance or its root $data ' +
+      '- just set it to null.'
+    )
+    return;
+  }
+  if (!hasOwn(target, key)) {
+    return;
+  }
+  // 删除属性
+  delete target[key];
+  
+  if (!ob) {
+    return;
+  }
+  ob.dep.notify();
 }
 
 export default Observer;

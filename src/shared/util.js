@@ -36,6 +36,17 @@ export function isObject (obj) {
 export function noop () {}
 
 /**
+ * Always return false.
+ */
+export const no = () => false
+
+/**
+ * Return same value
+ */
+export const identity = (_) => _
+
+
+/**
  * Make a map and return a function for checking if a key
  * is in that map.
  */
@@ -55,7 +66,16 @@ export function makeMap (
 
 /**
  * Check whether the object has the property.
+ * 属于实例属性
  */
 export function hasOwn (obj, key) {
   return hasOwnProperty.call(obj, key)
+}
+
+/**
+ * Check if val is a valid array index.
+ */
+export function isValidArrayIndex (val) {
+  const n = parseFloat(String(val))
+  return n >= 0 && Math.floor(n) === n && isFinite(val)
 }

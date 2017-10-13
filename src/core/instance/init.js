@@ -1,5 +1,4 @@
 import { initState } from './state'
-import Compile from 'src/compiler/index'
 
 let uid = 0;
 
@@ -12,9 +11,10 @@ export default function initMixin (MVVM) {
     vm.$options = options || {};
     
     initState(vm);
-    if (vm.$options.el) {
-      this.$compile = new Compile(this.$options.el, this)      
-    }
+    // if (vm.$options.el) {
+    //   this.$mount();
+    // }
+    vm.$mount(vm.$options.el);
   }
   
 }

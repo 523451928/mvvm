@@ -28,7 +28,8 @@ function Watcher(vm, expOrFn, cb, options = {}) {
     this.getter = this.parseGetter(expOrFn);
   }
 
-  // 观察员 value
+  // lazy:true 属于计算属性
+  // lazy:false 指令或函数
   this.value = this.lazy
   ? undefined
   : this.get();
@@ -57,7 +58,7 @@ Watcher.prototype = {
   },
   
   /**
-   * watcher 观察员 加入到某个被观察数据集合中
+   * 加入到某数据对象的观察员集合中
    * @param {Dep} dep
    */
   addDep: function (dep) {
@@ -132,7 +133,6 @@ Watcher.prototype = {
         dep.removeSub(this);
       }
     });
-
     this.depIds = this.newDepIds;
     this.newDepIds = Object.create(null);
   },

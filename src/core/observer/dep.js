@@ -36,7 +36,8 @@ Dep.prototype = {
       Dep.target.addDep(this);
     }
   },
-
+  // 数据对象已经执行更新,
+  // 通知观察员集合进行更新
   notify: function () {
     this.subs.forEach(function (sub) {
       sub.update();
